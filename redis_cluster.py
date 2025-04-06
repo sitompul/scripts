@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import stat
 
 def redis_conf_template(port: int) -> str:
     return f"""
@@ -108,11 +109,20 @@ def main() -> None:
     # Generate script that will connect all the cluster, if there is no change in number of cluster
     # nodes, then no need to run it again.
     os.makedirs("./scripts", exist_ok=True)
-    with open("./scripts/connect_cluster_run_once.sh", "w") as file:
+
+    connect_cluster_script_path = "./scripts/connect_cluster_run_once.sh"
+    with open(connect_cluster_script_path, "w") as file:
         file.write(run_once)
-    with open("./scripts/start_systemd.sh", "w") as file:
+    os.chmod(connect_cluster_script_path, os.stat(connect_cluster_script_path).st_mode | stat.S_IXUSR)
+
+    start_systemd_script_path = "./scripts/start_systemd.sh"
+    with open(start_systemd_script_path, "w") as file:
         file.write(start_script)
-    with open("./scripts/stop_systemd.sh", "w") as file:
+    os.chmod(start_systemd_script_path, os.stat(start_systemd_script_path).st_mode | stat.S_IXUSR)
+
+    stop_systemd_script_path = "./scripts/stop_systemd.sh"
+    with open(stop_systemd_script_path, "w") as file:
         file.write(stop_script)
+    os.chmod(stop_systemd_script_path, os.stat(stop_systemd_script_path).st_mode | stat.S_IXUSR)
 
 main()
