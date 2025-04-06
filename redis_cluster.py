@@ -29,9 +29,8 @@ def generate_run_shell_script(
     for i in range (redis_instance_count):
         current_port = port_start + i
         instance_address_list.append(f"127.0.0.1:{current_port}")
-        processor_used = f"""{i} {i+1}"""
-        if i % 2 != 0:
-            processor_used = f"""{i-1} {i}"""
+        processor_used = i
+
         command = f"""
 # /etc/systemd/system/redis-{current_port}.service
 
@@ -64,6 +63,13 @@ redis-cli --cluster create {instance_address_script} --cluster-replicas {number_
     return (systemd_config, run_cluster_command, start_redis_systemd_command, stop_redis_systemd_command)
 
 def main() -> None:
+    # The only configuration needed
+    is_ha = False
+
+    is_ha_question = input("Do you want to enable High Availability (Lesser masters will be generated)? (y/N): ").strip().lower()
+    if is_ha_question == "y":
+        is_ha = True
+
     if os.geteuid() != 0:
         print("must run with sudo")
         return
@@ -71,16 +77,20 @@ def main() -> None:
     redis_instance_count = os.cpu_count()
     if redis_instance_count is None:
         redis_instance_count = 1
+    number_of_replica: int = 0
+    if is_ha:
+        number_of_replica: int = int(redis_instance_count / 2) + 1 # number of replica must be larger than number of instance
+        number_of_master =  redis_instance_count - number_of_replica
+        print(f"\nHA is enabled, {number_of_master} master(s) will be created and {number_of_replica} replica(s) will be created\n")
+    else:
+        print("\nHA is disabled, no replica(s) will be created\n")
+
     # check how many threads, number of redis instance will be based on number of threads.
-    if redis_instance_count == 0:
-        print("no threads is detected, threads is 0")
+    if redis_instance_count < 3:
+        print("min 3 threads are required, thread count is:", redis_instance_count)
         print("no cluster is configured")
         return
 
-    # for HA and queing this is needed.
-    # Default configuration is half of the threads are service as slave.
-    number_of_replica: int = 0
-    # number_of_replica: int = int(redis_instance_count / 2)
 
     # Default starting port for redis.
     port_start: int = 7000

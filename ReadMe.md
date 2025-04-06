@@ -2,6 +2,9 @@
 
 ## Redis Cluster
 
+Redis High Availability need odd number of nodes and at minimum 3 masters. To make it easier to promote the next master during failover.
+So if you have 8 cores and wants to have HA, the configuration will be 3 masters 5 slaves
+
 - Only works on Ubuntu (typically you just need to change the path if your OS is linux based and supports systemd)
     - To support other **non-linux** os, you need to use `daemonize yes` configuration
     - Then run each node using `redis-server` command manually
