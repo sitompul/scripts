@@ -18,7 +18,7 @@ def generate_run_shell_script(
     redis_instance_count: int,
 ) -> tuple[dict[str, str], str, str, str] :
 
-    result: dict[str, str] = {}
+    systemd_config: dict[str, str] = {}
 
     instance_address_list: list[str] = []
 
@@ -49,18 +49,18 @@ WorkingDirectory=/var/lib/redis
 
 [Install]
 WantedBy=multi-user.target"""
-        result[str(current_port)] = command
+        systemd_config[str(current_port)] = command
         start_script.append(f"sudo systemctl enable --now redis-{current_port}")
         stop_script.append(f"sudo systemctl stop redis-{current_port}")
 
     instance_address_script = " ".join(instance_address_list)
-    cluster_script = f"""# Run this only once, there is no need to run this after restarting the service, redis will automatically connect between node inside the cluster
+    run_cluster_command = f"""# Run this only once, there is no need to run this after restarting the service, redis will automatically connect between node inside the cluster
 redis-cli --cluster create {instance_address_script} --cluster-replicas {number_of_replica} --cluster-yes
 """
-    start_script_content = " && ".join(start_script)
-    stop_script_content = " && ".join(stop_script)
+    start_redis_systemd_command = " && ".join(start_script)
+    stop_redis_systemd_command = " && ".join(stop_script)
 
-    return (result, cluster_script, start_script_content, stop_script_content)
+    return (systemd_config, run_cluster_command, start_redis_systemd_command, stop_redis_systemd_command)
 
 def main() -> None:
     if os.geteuid() != 0:
