@@ -94,10 +94,8 @@ def main() -> None:
 
     # check how many threads, number of redis instance will be based on number of threads.
     if redis_instance_count < 3:
-        print("min 3 threads are required, thread count is:", redis_instance_count)
-        print("no cluster is configured")
+        print("FAIL: min 3 threads are required, thread count is:", redis_instance_count)
         return
-
 
     # Default starting port for redis.
     port_start: int = 7000
@@ -141,5 +139,7 @@ def main() -> None:
     with open(stop_systemd_script_path, "w") as file:
         file.write(stop_script)
     os.chmod(stop_systemd_script_path, os.stat(stop_systemd_script_path).st_mode | stat.S_IXUSR)
+
+    print("SUCCESS: Scripts are generated on ./scripts")
 
 main()
