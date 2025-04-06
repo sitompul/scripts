@@ -63,12 +63,6 @@ redis-cli --cluster create {instance_address_script} --cluster-replicas {number_
     return (systemd_config, run_cluster_command, start_redis_systemd_command, stop_redis_systemd_command)
 
 def main() -> None:
-    # The only configuration needed
-    is_ha = False
-
-    is_ha_question = input("Do you want to enable High Availability (Lesser masters will be generated)? (y/N): ").strip().lower()
-    if is_ha_question == "y":
-        is_ha = True
 
     if os.geteuid() != 0:
         print("must run with sudo")
@@ -78,11 +72,15 @@ def main() -> None:
     if redis_instance_count is None:
         redis_instance_count = 1
     number_of_replica: int = 0
-    if is_ha:
+
+    is_ha_question = input("Do you want to enable High Availability (Lesser masters will be generated)? (y/N): ").strip().lower()
+    if is_ha_question == "y":
+        # HA is enabled
         number_of_replica: int = int(redis_instance_count / 2) + 1 # number of replica must be larger than number of instance
         number_of_master =  redis_instance_count - number_of_replica
         print(f"\nHA is enabled, {number_of_master} master(s) will be created and {number_of_replica} replica(s) will be created\n")
     else:
+        # HA is disabled
         print("\nHA is disabled, no replica(s) will be created\n")
 
     # check how many threads, number of redis instance will be based on number of threads.
