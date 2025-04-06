@@ -107,12 +107,12 @@ def main() -> None:
 
     # Generate script that will connect all the cluster, if there is no change in number of cluster
     # nodes, then no need to run it again.
-    os.makedirs("./script", exist_ok=True)
-    with open("./script/connect_cluster_run_once.sh", "w") as file:
+    os.makedirs("./scripts", exist_ok=True)
+    with open("./scripts/connect_cluster_run_once.sh", "w") as file:
         file.write(run_once)
-    with open("./script/start_service.sh", "w") as file:
+    with open("./scripts/start_systemd.sh", "w") as file:
         file.write(start_script)
-    with open("./script/stop_service.sh", "w") as file:
+    with open("./scripts/stop_systemd.sh", "w") as file:
         file.write(stop_script)
 
 main()
