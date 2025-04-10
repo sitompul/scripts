@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import stat
+import subprocess
 
 def redis_conf_template(port: int) -> str:
     return f"""
@@ -139,7 +140,13 @@ def main() -> None:
     with open(stop_systemd_script_path, "w") as file:
         file.write(stop_script)
     os.chmod(stop_systemd_script_path, os.stat(stop_systemd_script_path).st_mode | stat.S_IXUSR)
-
     print("SUCCESS: Scripts are generated on ./scripts")
+
+    run_now = input("Run the cluster now? (y/N)")
+    if run_now == "y":
+        subprocess.run(['bash', './scripts/start_systemd.sh'])
+        subprocess.run(['bash', './scripts/connect_cluster_run_once.sh'])
+        print("SUCCESS: Redis cluster is now running")
+
 
 main()
